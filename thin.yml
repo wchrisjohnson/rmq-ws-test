@@ -1,0 +1,9 @@
+---
+environment: local
+port: 8080
+servers: 1
+tag: message_hub
+pid: thin.pid
+log: thin.log
+daemonize: false
+
