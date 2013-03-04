@@ -1,44 +1,39 @@
 require 'em-websocket'
 require 'amqp'
 
-def self.amqp_channels
-  @amqp_channels ||= {}
-end
-
-def self.amqp_connection
-  EventMachine.next_tick do
-    if @amqp_connection
-      puts "Using existing connection"
-    else
-      puts "Creating new connection"
-      @amqp_connection = AMQP.connect(:host => 'localhost')
-    end # if @amqp_connection...
-    @amqp_connection
-  end
-end
-
-EventMachine::WebSocket.start(:host => "0.0.0.0", :port => 8080) do |ws|
-  ws.onopen do
-    puts "WebSocket opened"
-    AMQP::Channel.new(self.amqp_connection) do |channel, open_ok|
-      amqp_channels[self.object_id] = channel
-      channel.queue(AMQ::Protocol::EMPTY_STRING, durable: true,exclusive: true,auto_delete: true).bind(channel.direct("platform.alert",durable: true),routing_key: 'critical').subscribe do |t|
-        puts 'got a message'
-        ws.send t
-      end
-    end
+EventMachine.run do 
+  
+  if AMQP.connection && AMQP.connection.connected? 
+    puts "AMQP connected."
+  else
+    puts "New AMQP connection."
+    AMQP.connect(:host => 'localhost')
   end
 
-  ws.onclose do
-    EventMachine.next_tick do
-      channel = amqp_channels[self.object_id]
-      if channel && channel.open?
-        channel.close do |close_ok|
-          puts "Closing amqp channel"
-          amqp_channels.delete(self.object_id)
+  EventMachine::WebSocket.start(:host => "0.0.0.0", :port => 8080) do |ws|
+    ws.onopen do
+      puts "WebSocket opened"
+      AMQP::Channel.new do |channel, open_ok|
+        channel.once_open do
+          @mychannel = channel
+          puts "Channel #{@mychannel.id} opened."
+          @mychannel.queue( AMQ::Protocol::EMPTY_STRING, 
+                            durable: true,
+                            exclusive: true,
+                            auto_delete: true).bind(@mychannel.direct("platform.alert",durable: true),routing_key: 'critical').subscribe do |t|
+          end # queue
+        end # channel.once_open
+      end # AMQP::Channel.new
+    end # ws.onopen
+
+    ws.onclose do
+      if AMQP.connection.connected? && @mychannel && @mychannel.open?
+        puts "Closing amqp channel #{@mychannel.id}"
+        @mychannel.close do |close_ok|
+          puts "amqp channel #{@mychannel.id} closed."
         end
       end
-    end
-    puts "WebSocket closed"
+      puts "WebSocket closed"
+    end  
   end
 end
