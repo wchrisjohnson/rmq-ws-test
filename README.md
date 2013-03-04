@@ -6,7 +6,7 @@ Testbed to isolate rabbitmq/websocket interaction
 
 ## Setup local copy of this sample project
 
-- git clone https://git.hpcloud.net/chrjohns/rmq-ws-test
+- git clone
 - ensure the version of ruby and the gemset are consistent
 - bundle install
 
