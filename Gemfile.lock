@@ -6,7 +6,7 @@ GEM
       amq-protocol (>= 1.2.0)
       eventmachine
     amq-protocol (1.2.0)
-    amqp (0.9.9)
+    amqp (0.9.10)
       amq-client (~> 0.9.12)
       amq-protocol (~> 1.2.0)
       eventmachine
@@ -51,7 +51,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  amqp (~> 0.9.9)
+  amqp (~> 0.9.10)
   json
   rack
   rack-test

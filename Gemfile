@@ -8,7 +8,7 @@ gem 'json'
 gem 'websocket-rack'
 
 # Rabbitmq
-gem 'amqp', '~> 0.9.9'
+gem 'amqp', '~> 0.9.10'
 
 group :development, :test do
   gem 'rake'
